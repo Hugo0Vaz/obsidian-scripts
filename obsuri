@@ -2,17 +2,15 @@
 
 REALPATH=$(realpath $@)
 
-PRETTY_NAME=${REALPATH##*/}
-
 URI_PATH=$(echo $REALPATH | sed 's: :%20:g')
 
 BRK_1="["
 BRK_2="]"
 
-PRT_1="file:///"
+PRT_1="(file:///"
 PRT_2=")"
 
-URI=$BRK_1$PRETTY_NAME$BRK_2$PRT_1$URI_PATH$PRT_2
+URI=$BRK_1$BRK_2$PRT_1$URI_PATH$PRT_2
 
 echo $URI | xclip -i
 

@@ -1,0 +1,51 @@
+#!/bin/bash
+
+DAILY_NOTES_FOLDER=~/HugoMartins/Documentos/obsidian/hugomvs-vault/daily_notes/
+MONTHLY_NOTES_FOLDER=~/HugoMartins/Documentos/obsidian/hugomvs-vault/monthly_notes/
+
+current_month=$(date +%m)
+current_year=$(date +%y)
+
+# notas a serem ignoradas, as notas do mês atual
+exclude_notes="$current_year$current_month"
+
+# lista das notas exceto as notas do mês atual
+notes_list=$(find $DAILY_NOTES_FOLDER | grep -v $exclude_notes | sort)
+
+for note in $notes_list
+do
+    # verifica se $note é um arquivo ou diretório existente
+    # se for um diretório é ignorado
+    if [[ -f "$note" ]]; then
+
+        # busca linha em que '## log'  aparece
+        line_match=$(grep -n "##\ log" $note | cut -f1 -d:)
+    
+        # acrescenta 1 na linha para saltar o '## log'
+        log_text_begin=$(($line_match+1))
+
+        # busca o conteúdo da nota
+        log_text="$(tail -n +${log_text_begin} $note)"
+
+        # note da nota
+        note_basename=$(basename $note)
+    
+        note_year=${note_basename:0:4}
+        note_month=${note_basename:4:2}
+        note_day=${note_basename:6:2}
+
+        # path do arquivo de nota mensal que irá ser criado
+        mn_file_name="$MONTHLY_NOTES_FOLDER$note_year$note_month.md"
+
+        # título do log na nota
+        log_header="## log $note_year-$note_month-$note_day"
+        
+        # concatenando dados no arquivo de nota mensal
+        echo $'\n'
+        echo $log_header >> $mn_file_name
+        echo "$log_text" >> $mn_file_name
+
+        # removendo as daily_notes que não são necessárias mais
+        rm -rf $note
+    fi
+done
